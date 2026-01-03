@@ -14,8 +14,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 export function Header() {
+  const pathname = usePathname();
+
+  const navLinkClasses = (path: string) =>
+    cn(
+      "transition-colors hover:text-foreground/80",
+      pathname === path ? "text-foreground" : "text-foreground/60"
+    );
+
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center">
@@ -28,20 +39,20 @@ export function Header() {
           </Link>
           <nav className="flex items-center gap-6 text-sm">
             <Link
-              href="#"
-              className="text-foreground/60 transition-colors hover:text-foreground/80"
+              href="/"
+              className={navLinkClasses("/")}
             >
               Home
             </Link>
             <Link
-              href="#"
-              className="text-foreground/60 transition-colors hover:text-foreground/80"
+              href="/search"
+              className={navLinkClasses("/search")}
             >
-              Discover
+              Search
             </Link>
             <Link
               href="#"
-              className="text-foreground/60 transition-colors hover:text-foreground/80"
+              className={navLinkClasses("/library")}
             >
               Library
             </Link>
