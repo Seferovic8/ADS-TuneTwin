@@ -34,7 +34,8 @@ export const similarTracks: Track[] = [
     title: 'Walking On A Dream',
     artist: 'Empire of the Sun',
     album: 'Walking on a Dream',
-    imageUrl: '',
+    imageUrl: 'https://picsum.photos/seed/empire/64/64',
+    imageHint: 'surreal landscape',
     match: 82,
   },
     {
@@ -42,7 +43,8 @@ export const similarTracks: Track[] = [
     title: 'Kids',
     artist: 'MGMT',
     album: 'Oracular Spectacular',
-    imageUrl: '',
+    imageUrl: 'https://picsum.photos/seed/kids/64/64',
+    imageHint: 'childlike drawing',
     match: 79,
   },
 ];

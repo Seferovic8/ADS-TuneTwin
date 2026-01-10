@@ -1,9 +1,10 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { similarTracks, Track } from "@/lib/songs";
+import { allTracks, Track } from "@/lib/songs";
 import { ListMusic, Mic, Radio, Search, Upload } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -11,7 +12,7 @@ import { useState } from "react";
 
 function TrackItem({ track }: { track: Track }) {
     return (
-        <Link href={`/similarity?trackId=${track.id}`} className="block">
+        <Link href={`/similarityresults?trackId=${track.id}`} className="block">
             <div className="flex items-center p-3 rounded-lg hover:bg-secondary/20 transition-colors cursor-pointer">
                 {track.imageUrl ? (
                     <Image
@@ -39,7 +40,6 @@ function TrackItem({ track }: { track: Track }) {
 export default function HomePage() {
     const [searchTerm, setSearchTerm] = useState("");
     
-    const allTracks = [...similarTracks, ...similarTracks, ...similarTracks];
     const filteredTracks = allTracks.filter(track => 
         track.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         track.artist.toLowerCase().includes(searchTerm.toLowerCase())

@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -22,7 +23,7 @@ export function Header() {
   const navLinkClasses = (path: string) =>
     cn(
       "transition-colors hover:text-foreground/80",
-      pathname === path ? "text-foreground" : "text-foreground/60"
+      pathname.startsWith(path) ? "text-foreground" : "text-foreground/60"
     );
 
 
@@ -39,7 +40,7 @@ export function Header() {
           <nav className="flex items-center gap-6 text-sm">
             <Link
               href="/"
-              className={navLinkClasses("/")}
+              className={cn("transition-colors hover:text-foreground/80", pathname === "/" ? "text-foreground" : "text-foreground/60")}
             >
               Home
             </Link>
