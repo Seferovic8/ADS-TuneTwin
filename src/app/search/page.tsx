@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { similarTracks, Track } from "@/lib/songs";
-import { ListMusic, Mic, Radio, Upload } from "lucide-react";
+import { ListMusic, Mic, Radio, Search, Upload } from "lucide-react";
 import Image from "next/image";
 
 function TrackItem({ track }: { track: Track }) {
@@ -40,6 +40,13 @@ export default function SearchPage() {
                 {/* Left Column: Track Selection */}
                 <div className="lg:col-span-1">
                     <h2 className="text-2xl font-bold mb-4">Select a Track</h2>
+                    <div className="relative mb-4">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Input
+                            placeholder="Search for a track..."
+                            className="pl-10 w-full"
+                        />
+                    </div>
                     <Card className="bg-secondary/30 border-border/50">
                         <CardContent className="p-2 max-h-[60vh] overflow-y-auto">
                             <div className="space-y-1">
@@ -79,6 +86,7 @@ export default function SearchPage() {
                                     <Radio className="text-primary"/>
                                     Recognize Audio
                                 </CardTitle>
+
                             </CardHeader>
                             <CardContent>
                                 <p className="text-muted-foreground mb-4">
@@ -87,23 +95,6 @@ export default function SearchPage() {
                                 <Button size="lg" className="w-full">
                                     <Mic className="mr-2"/>
                                     Start Listening
-                                </Button>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="bg-secondary/30 border-border/50 hover:border-primary/50 transition-colors">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-3">
-                                    <Mic className="text-primary"/>
-                                    Record a Melody
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-muted-foreground mb-4">
-                                   Hum a tune or record a snippet of audio to find matching tracks.
-                                </p>
-                                <Button size="lg" variant="outline" className="w-full">
-                                    Start Recording
                                 </Button>
                             </CardContent>
                         </Card>
