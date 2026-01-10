@@ -1,6 +1,16 @@
+import { API_BASE_URL } from "./config";
+
+export type ApiTrack = {
+  id: string;
+  title: string;
+  artist: string;
+  album: string;
+  duration_s: number;
+  imagePath: string;
+};
 
 export type Track = {
-  id: string;
+  id:string;
   title: string;
   artist: string;
   album: string;
@@ -9,6 +19,34 @@ export type Track = {
   imageHint?: string;
   match: number;
 };
+
+// This function now fetches from the API and maps to the existing Track type.
+// This minimizes changes needed in the UI components for now.
+export async function getAllTracks(): Promise<Track[]> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/getAllTracks`);
+        if (!response.ok) {
+            console.error("Failed to fetch tracks:", response.statusText);
+            return fallbackTracks;
+        }
+        const apiTracks: ApiTrack[] = await response.json();
+        
+        // Map API response to the existing Track type
+        return apiTracks.map((apiTrack, index) => ({
+            id: apiTrack.id || `${index}`,
+            title: apiTrack.title,
+            artist: apiTrack.artist,
+            album: apiTrack.album,
+            imageUrl: apiTrack.imagePath || `https://picsum.photos/seed/${apiTrack.id || index}/64/64`,
+            match: Math.floor(Math.random() * 25) + 75, // Fake a match score
+            imageHint: 'album art'
+        }));
+    } catch (error) {
+        console.error("Error fetching tracks:", error);
+        return fallbackTracks;
+    }
+}
+
 
 export const similarTracks: Track[] = [
   {
@@ -49,7 +87,7 @@ export const similarTracks: Track[] = [
   },
 ];
 
-export const allTracks = [
+const fallbackTracks: Track[] = [
   {
     id: 'midnight-city',
     title: 'Midnight City',

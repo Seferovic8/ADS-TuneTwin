@@ -3,11 +3,11 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { allTracks, Track } from "@/lib/songs";
+import { getAllTracks, Track } from "@/lib/songs";
 import { ListMusic, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function TrackItem({ track }: { track: Track }) {
     return (
@@ -39,6 +39,15 @@ function TrackItem({ track }: { track: Track }) {
 
 export default function SimilarityPage() {
     const [searchTerm, setSearchTerm] = useState("");
+    const [allTracks, setAllTracks] = useState<Track[]>([]);
+
+    useEffect(() => {
+        const fetchTracks = async () => {
+            const tracks = await getAllTracks();
+            setAllTracks(tracks);
+        };
+        fetchTracks();
+    }, []);
     
     const filteredTracks = allTracks.filter(track => 
         track.title.toLowerCase().includes(searchTerm.toLowerCase()) ||

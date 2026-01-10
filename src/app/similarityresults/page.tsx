@@ -5,24 +5,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Heart, ListMusic, PlayCircle } from "lucide-react";
 import Image from 'next/image';
 import SimilarTracks from "@/components/similar-tracks";
-import { allTracks, Track } from "@/lib/songs";
+import { getAllTracks, Track } from "@/lib/songs";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 async function getTrackById(id: string): Promise<Track | undefined> {
+  const tracks = await getAllTracks();
   if (id === 'midnight-city') {
-    return {
-      id: 'midnight-city',
-      title: 'Midnight City',
-      artist: 'M83',
-      album: "Hurry Up, We're Dreaming",
-      year: '2011',
-      imageUrl: 'https://picsum.photos/seed/midnight-city/400/400',
-      imageHint: 'city night',
-      match: 92,
-    };
+    return tracks.find(track => track.id === 'midnight-city') || tracks[0];
   }
-  return allTracks.find(track => track.id === id);
+  return tracks.find(track => track.id === id);
 }
 
 async function SimilarityContent({ trackId }: { trackId: string }) {
@@ -84,7 +76,7 @@ async function SimilarityContent({ trackId }: { trackId: string }) {
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-sm text-muted-foreground">MATCH SCORE</p>
-                  <p className="text-5xl font-bold text-blue-400">92%</p>
+                  <p className="text-5xl font-bold text-blue-400">{track.match}%</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-muted-foreground">Similar to</p>
