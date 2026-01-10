@@ -4,6 +4,7 @@ export type Track = {
   title: string;
   artist: string;
   album: string;
+  year?: string;
   imageUrl: string;
   imageHint?: string;
   match: number;
@@ -44,4 +45,17 @@ export const similarTracks: Track[] = [
     imageUrl: '',
     match: 79,
   },
+];
+
+export const allTracks = [
+  {
+    id: 'midnight-city',
+    title: 'Midnight City',
+    artist: 'M83',
+    album: "Hurry Up, We're Dreaming",
+    imageUrl: 'https://picsum.photos/seed/midnight-city/64/64',
+    imageHint: 'city night',
+    match: 100,
+  },
+  ...similarTracks
 ];

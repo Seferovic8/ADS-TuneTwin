@@ -1,38 +1,51 @@
 
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { similarTracks, Track } from "@/lib/songs";
 import { ListMusic, Mic, Radio, Search, Upload } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 
 function TrackItem({ track }: { track: Track }) {
     return (
-        <div className="flex items-center p-3 rounded-lg hover:bg-secondary/20 transition-colors cursor-pointer">
-            {track.imageUrl ? (
-                <Image
-                    src={track.imageUrl}
-                    alt={`Album art for ${track.title}`}
-                    width={48}
-                    height={48}
-                    className="rounded-md mr-4 aspect-square object-cover"
-                    data-ai-hint={track.imageHint}
-                />
-            ) : (
-                <div className="w-12 h-12 flex-shrink-0 mr-4 rounded-md bg-secondary flex items-center justify-center">
-                    <ListMusic className="w-6 h-6 text-muted-foreground" />
+        <Link href={`/tracks/${track.id}`} className="block">
+            <div className="flex items-center p-3 rounded-lg hover:bg-secondary/20 transition-colors cursor-pointer">
+                {track.imageUrl ? (
+                    <Image
+                        src={track.imageUrl}
+                        alt={`Album art for ${track.title}`}
+                        width={48}
+                        height={48}
+                        className="rounded-md mr-4 aspect-square object-cover"
+                        data-ai-hint={track.imageHint}
+                    />
+                ) : (
+                    <div className="w-12 h-12 flex-shrink-0 mr-4 rounded-md bg-secondary flex items-center justify-center">
+                        <ListMusic className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                )}
+                <div className="flex-1">
+                    <p className="font-semibold">{track.title}</p>
+                    <p className="text-sm text-muted-foreground">{track.artist}</p>
                 </div>
-            )}
-            <div className="flex-1">
-                <p className="font-semibold">{track.title}</p>
-                <p className="text-sm text-muted-foreground">{track.artist}</p>
             </div>
-        </div>
+        </Link>
     );
 }
 
-
 export default function SearchPage() {
+    const [searchTerm, setSearchTerm] = useState("");
+    
+    const allTracks = [...similarTracks, ...similarTracks, ...similarTracks];
+    const filteredTracks = allTracks.filter(track => 
+        track.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        track.artist.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -45,12 +58,14 @@ export default function SearchPage() {
                         <Input
                             placeholder="Search for a track..."
                             className="pl-10 w-full"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                     <Card className="bg-secondary/30 border-border/50">
                         <CardContent className="p-2 max-h-[60vh] overflow-y-auto">
                             <div className="space-y-1">
-                                {[...similarTracks, ...similarTracks, ...similarTracks].map((track, index) => (
+                                {filteredTracks.map((track, index) => (
                                     <TrackItem key={`${track.id}-${index}`} track={track} />
                                 ))}
                             </div>
