@@ -1,8 +1,7 @@
-
 "use client";
 
 import Link from "next/link";
-import { Circle, Search, Music } from "lucide-react";
+import { Circle, Search, Music, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -55,6 +54,12 @@ export function Header() {
               className={navLinkClasses("/shazam")}
             >
               Shazam
+            </Link>
+             <Link
+              href="/addSong"
+              className={navLinkClasses("/addSong")}
+            >
+              Add Song
             </Link>
           </nav>
         </div>

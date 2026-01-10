@@ -1,4 +1,3 @@
-
 import { API_BASE_URL } from "./config";
 
 export type ApiTrack = {
@@ -23,6 +22,14 @@ export type Track = {
   imageHint?: string;
   match: number;
 };
+
+export type NewSong = {
+    title: string;
+    artist: string;
+    album: string;
+    image?: string;
+    track: string; // Base64 encoded audio
+}
 
 export const mapApiTrackToTrack = (apiTrack: ApiTrack): Track => ({
     id: apiTrack.id || apiTrack.song_id || '',
@@ -91,6 +98,21 @@ export async function getShazamSong(audio: string): Promise<ApiTrack | null> {
     } catch (error) {
         console.error("Error shazaming song:", error);
         return null;
+    }
+}
+
+export async function addSong(song: NewSong): Promise<boolean> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/addSong`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(song)
+        });
+        
+        return response.ok;
+    } catch (error) {
+        console.error("Error adding song:", error);
+        return false;
     }
 }
 
