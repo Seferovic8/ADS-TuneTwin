@@ -1,8 +1,7 @@
-
 "use client";
 
 import Link from "next/link";
-import { Circle, Search } from "lucide-react";
+import { Circle, Search, Music } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -45,16 +44,16 @@ export function Header() {
               Home
             </Link>
             <Link
-              href="/search"
-              className={navLinkClasses("/search")}
+              href="/similarity"
+              className={navLinkClasses("/similarity")}
             >
-              Search
+              Similarity
             </Link>
             <Link
-              href="#"
-              className={navLinkClasses("/library")}
+              href="/shazam"
+              className={navLinkClasses("/shazam")}
             >
-              Library
+              Shazam
             </Link>
           </nav>
         </div>
