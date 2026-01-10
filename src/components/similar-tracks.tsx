@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { similarTracks, Track } from "@/lib/songs";
+import { Track } from "@/lib/songs";
 import { ChevronDown, Music, Plus } from "lucide-react";
 import Image from "next/image";
 
@@ -36,7 +36,7 @@ function TrackItem({ track }: { track: Track }) {
     );
 }
 
-export default function SimilarTracks() {
+export default function SimilarTracks({ tracks }: { tracks: Track[] }) {
   return (
     <div>
         <div className="flex justify-between items-center mb-4">
@@ -58,7 +58,7 @@ export default function SimilarTracks() {
         <Card className="bg-secondary/30 border-border/50">
             <CardContent className="p-2">
                 <div className="space-y-1">
-                    {similarTracks.map(track => (
+                    {tracks.map(track => (
                         <TrackItem key={track.id} track={track} />
                     ))}
                 </div>

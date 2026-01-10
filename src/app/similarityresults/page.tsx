@@ -5,15 +5,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Heart, ListMusic, PlayCircle } from "lucide-react";
 import Image from 'next/image';
 import SimilarTracks from "@/components/similar-tracks";
-import { getAllTracks, Track } from "@/lib/songs";
+import { getAllTracks, Track, findSimilarTracks } from "@/lib/songs";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 async function getTrackById(id: string): Promise<Track | undefined> {
   const tracks = await getAllTracks();
-  if (id === 'midnight-city') {
-    return tracks.find(track => track.id === 'midnight-city') || tracks[0];
-  }
   return tracks.find(track => track.id === id);
 }
 
@@ -23,6 +20,8 @@ async function SimilarityContent({ trackId }: { trackId: string }) {
   if (!track) {
     notFound();
   }
+
+  const similarTracksData = await findSimilarTracks(trackId);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -88,7 +87,7 @@ async function SimilarityContent({ trackId }: { trackId: string }) {
         </div>
 
         <div className="lg:col-span-2">
-          <SimilarTracks />
+          <SimilarTracks tracks={similarTracksData} />
         </div>
       </div>
     </div>
@@ -104,3 +103,4 @@ export default function SimilarityResultsPage({ searchParams }: { searchParams: 
     </Suspense>
   );
 }
+
