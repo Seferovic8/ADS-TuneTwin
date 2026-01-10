@@ -3,11 +3,14 @@ import { API_BASE_URL } from "./config";
 
 export type ApiTrack = {
   id: string;
+  song_id?: string;
   title: string;
   artist: string;
   album: string;
   duration_s: number;
   imagePath: string;
+  duration?: number;
+  image?: string;
 };
 
 export type Track = {
@@ -21,12 +24,12 @@ export type Track = {
   match: number;
 };
 
-const mapApiTrackToTrack = (apiTrack: ApiTrack): Track => ({
-    id: apiTrack.id,
+export const mapApiTrackToTrack = (apiTrack: ApiTrack): Track => ({
+    id: apiTrack.id || apiTrack.song_id || '',
     title: apiTrack.title,
     artist: apiTrack.artist,
     album: apiTrack.album,
-    imageUrl: apiTrack.imagePath || `https://picsum.photos/seed/${apiTrack.id}/64/64`,
+    imageUrl: apiTrack.imagePath || apiTrack.image || `https://picsum.photos/seed/${apiTrack.id}/64/64`,
     match: Math.floor(Math.random() * 25) + 75, // Fake a match score
     imageHint: 'album art'
 });
@@ -72,6 +75,25 @@ export async function findSimilarTracks(song_id: string): Promise<Track[]> {
         return similarTracks; // fallback
     }
 }
+
+export async function getShazamSong(audio: string): Promise<ApiTrack | null> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/getShazamSong`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ audio_base64: audio })
+        });
+        if (!response.ok) {
+            console.error("Failed to shazam song:", response.statusText);
+            return null;
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Error shazaming song:", error);
+        return null;
+    }
+}
+
 
 export const similarTracks: Track[] = [
   {
@@ -124,4 +146,3 @@ const fallbackTracks: Track[] = [
   },
   ...similarTracks
 ];
-
