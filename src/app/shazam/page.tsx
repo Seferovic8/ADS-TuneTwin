@@ -9,18 +9,34 @@ import { Track, getShazamSong, mapApiTrackToTrack } from "@/lib/songs";
 import { AudioLines, Loader2, Mic, Music, Upload, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 
 export default function ShazamPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [identifiedTrack, setIdentifiedTrack] = useState<Track | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
   const { toast } = useToast();
+
+  useEffect(() => {
+    const checkMicPermission = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            // We have permission. We can stop the track immediately.
+            stream.getTracks().forEach(track => track.stop());
+            setHasPermission(true);
+        } catch (err) {
+            setHasPermission(false);
+        }
+    };
+    checkMicPermission();
+  }, []);
 
   const handleAudioData = async (audioBlob: Blob) => {
     setIsProcessing(true);
@@ -45,6 +61,13 @@ export default function ShazamPage() {
           });
         }
       };
+      reader.onerror = () => {
+         toast({
+            variant: "destructive",
+            title: "File Error",
+            description: "There was an error reading the audio file.",
+        });
+      }
     } catch (err) {
       console.error("Error recognizing song:", err);
       setError("An error occurred during recognition.");
@@ -61,6 +84,7 @@ export default function ShazamPage() {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setHasPermission(true);
       setIsRecording(true);
       setError(null);
       setIdentifiedTrack(null);
@@ -86,6 +110,7 @@ export default function ShazamPage() {
 
     } catch (err) {
       console.error("Error accessing microphone:", err);
+      setHasPermission(false);
       setError("Could not access microphone. Please check permissions.");
       toast({
         variant: "destructive",
@@ -119,47 +144,34 @@ export default function ShazamPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col items-center justify-center gap-8">
-        {!identifiedTrack && !isProcessing && !error && (
-          <Card className="w-full max-w-md bg-secondary/30">
-            <CardContent className="p-12 text-center">
-              <h1 className="text-3xl font-bold mb-4">Tap to Shazam</h1>
-              <p className="text-muted-foreground mb-8">
-                Let's identify that song for you.
-              </p>
-              <Button
-                size="lg"
-                className={`w-48 h-48 rounded-full bg-primary/20 hover:bg-primary/30 border-8 border-primary/50 text-primary shadow-lg ${isRecording ? 'animate-pulse' : ''}`}
-                onClick={isRecording ? stopRecording : startRecording}
-                disabled={isProcessing}
-              >
-                {isRecording ? <AudioLines className="w-24 h-24" /> : <Mic className="w-24 h-24" />}
-              </Button>
+        
+        {isProcessing && (
+           <Card className="w-full max-w-md bg-secondary/30">
+            <CardContent className="p-8 text-center min-h-[380px] flex flex-col items-center justify-center">
+              <Loader2 className="w-24 h-24 text-primary animate-spin mb-6" />
+              <h1 className="text-2xl font-bold">Identifying...</h1>
+              <p className="text-muted-foreground mt-2">Please wait while we analyze the audio.</p>
             </CardContent>
           </Card>
         )}
 
-        {(isProcessing || identifiedTrack || error) && (
+        {error && !isProcessing && (
+          <Card className="w-full max-w-md bg-secondary/30">
+             <CardContent className="p-8 text-center min-h-[380px] flex flex-col items-center justify-center">
+                <Alert variant="destructive" className="text-left mb-6">
+                  <AlertTitle>Recognition Failed</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+                <Button onClick={resetState}>
+                  Try Again
+                </Button>
+              </CardContent>
+          </Card>
+        )}
+
+        {identifiedTrack && !isProcessing && (
           <Card className="w-full max-w-md bg-secondary/30">
             <CardContent className="p-8 text-center min-h-[380px] flex flex-col items-center justify-center">
-              {isProcessing && (
-                <>
-                  <Loader2 className="w-24 h-24 text-primary animate-spin mb-6" />
-                  <h1 className="text-2xl font-bold">Identifying...</h1>
-                  <p className="text-muted-foreground mt-2">Please wait while we analyze the audio.</p>
-                </>
-              )}
-              {error && !isProcessing && (
-                <>
-                  <Alert variant="destructive" className="text-left mb-6">
-                    <AlertTitle>Recognition Failed</AlertTitle>
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                  <Button onClick={resetState}>
-                    Try Again
-                  </Button>
-                </>
-              )}
-              {identifiedTrack && !isProcessing && (
                 <>
                   <h3 className="text-lg font-semibold text-primary mb-4">We found a match!</h3>
                   <div className="flex items-center w-full p-3 rounded-lg bg-secondary/30">
@@ -188,12 +200,38 @@ export default function ShazamPage() {
                       </Link>
                     </Button>
                   </div>
-
                 </>
-              )}
-            </CardContent>
+              </CardContent>
           </Card>
         )}
+
+        {!isProcessing && !identifiedTrack && !error && (
+            <Card className="w-full max-w-md bg-secondary/30">
+                <CardContent className="p-12 text-center">
+                <h1 className="text-3xl font-bold mb-4">Tap to Shazam</h1>
+                <p className="text-muted-foreground mb-8">
+                    Let's identify that song for you.
+                </p>
+                <Button
+                    size="lg"
+                    className={`w-48 h-48 rounded-full bg-primary/20 hover:bg-primary/30 border-8 border-primary/50 text-primary shadow-lg ${isRecording ? 'animate-pulse' : ''}`}
+                    onClick={isRecording ? stopRecording : startRecording}
+                    disabled={isProcessing || hasPermission === false}
+                >
+                    {isRecording ? <AudioLines className="w-24 h-24" /> : <Mic className="w-24 h-24" />}
+                </Button>
+                 {hasPermission === false && (
+                    <Alert variant="destructive" className="mt-8 text-left">
+                        <AlertTitle>Microphone Access Denied</AlertTitle>
+                        <AlertDescription>
+                            Please enable microphone permissions in your browser settings to use this feature.
+                        </AlertDescription>
+                    </Alert>
+                )}
+                </CardContent>
+            </Card>
+        )}
+
 
         <div className="text-center">
           <p className="text-muted-foreground text-lg">or</p>
