@@ -17,28 +17,28 @@ export default function ShazamPage() {
   const [identifiedTrack, setIdentifiedTrack] = useState<Track | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  
-  
-  
+
+
+
   const stopTimeoutRef = useRef<number | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
   const { toast } = useToast();
 
-  useEffect(() => {
-    const checkMicPermission = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        // We have permission. We can stop the track immediately.
-        stream.getTracks().forEach(track => track.stop());
-        setHasPermission(true);
-      } catch (err) {
-        setHasPermission(false);
-      }
-    };
-    checkMicPermission();
-  }, []);
+  // useEffect(() => {
+  //   const checkMicPermission = async () => {
+  //     try {
+  //       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  //       // We have permission. We can stop the track immediately.
+  //       stream.getTracks().forEach(track => track.stop());
+  //       setHasPermission(true);
+  //     } catch (err) {
+  //       setHasPermission(false);
+  //     }
+  //   };
+  //   checkMicPermission();
+  // }, []);
 
   const handleAudioData = async (audioBlob: Blob) => {
     setIsProcessing(true);
@@ -123,21 +123,21 @@ export default function ShazamPage() {
   };
 
   const stopRecording = () => {
-  // clear pending autostop
-  if (stopTimeoutRef.current !== null) {
-    window.clearTimeout(stopTimeoutRef.current);
-    stopTimeoutRef.current = null;
-  }
+    // clear pending autostop
+    if (stopTimeoutRef.current !== null) {
+      window.clearTimeout(stopTimeoutRef.current);
+      stopTimeoutRef.current = null;
+    }
 
-  const mr = mediaRecorderRef.current;
+    const mr = mediaRecorderRef.current;
 
-  // stop only if actually recording (ignore React state)
-  if (mr && mr.state !== "inactive") {
-    mr.stop();
-  }
+    // stop only if actually recording (ignore React state)
+    if (mr && mr.state !== "inactive") {
+      mr.stop();
+    }
 
-  setIsRecording(false);
-};
+    setIsRecording(false);
+  };
 
   const handleFileUpload = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
