@@ -9,20 +9,19 @@ import { getAllTracks, Track, findSimilarTracks } from "@/lib/songs";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-async function getTrackById(id: string): Promise<Track | undefined> {
+async function getTrackById(id: number): Promise<Track | undefined> {
   const tracks = await getAllTracks();
-  return tracks.find(track => track.id === id);
+  return tracks.find(track => track.id === +id);
 }
 
-async function SimilarityContent({ trackId }: { trackId: string }) {
+async function SimilarityContent({ trackId }: { trackId: number }) {
   const track = await getTrackById(trackId);
-
   if (!track) {
     notFound();
   }
 
   const similarTracksData = await findSimilarTracks(trackId);
-
+  console.log("Similar Tracks Data:", similarTracksData);
   return (
     <div className="container mx-auto px-4 py-8">
       <Breadcrumb className="mb-8">
@@ -94,8 +93,16 @@ async function SimilarityContent({ trackId }: { trackId: string }) {
   );
 }
 
-export default function SimilarityResultsPage({ searchParams }: { searchParams: { trackId?: string } }) {
-  const trackId = searchParams.trackId || 'midnight-city';
+
+export default async function SimilarityResultsPage({
+  searchParams
+}: {
+  searchParams: Promise<{ trackId: number }> // 2. Update type to Promise
+}) {
+
+  // 3. Await the params before accessing properties
+  const params = await searchParams;
+  const trackId = params.trackId;
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -103,4 +110,3 @@ export default function SimilarityResultsPage({ searchParams }: { searchParams: 
     </Suspense>
   );
 }
-
