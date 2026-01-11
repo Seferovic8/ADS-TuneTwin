@@ -52,7 +52,11 @@ export function mapApiTrackToTrack(apiTrack: ApiTrack): Track {
 // This minimizes changes needed in the UI components for now.
 export async function getAllTracks(): Promise<Track[]> {
     try {
-        const response = await fetch(`${API_BASE_URL}/getAllTracks`);
+        const response = await fetch(`${API_BASE_URL}/getAllTracks`, {
+            headers: {
+                "ngrok-skip-browser-warning": "1",
+            }
+        });
         if (!response.ok) {
             console.error("Failed to fetch tracks:", response.statusText);
             return fallbackTracks;
@@ -71,6 +75,8 @@ export async function findSimilarTracks(song_id: number): Promise<Track[]> {
         const response = await fetch(`${API_BASE_URL}/findSimilarSongs`, {
             method: 'POST',
             headers: {
+                "ngrok-skip-browser-warning": "1",
+
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ song_id }),
@@ -94,7 +100,7 @@ export async function getShazamSong(audio: string): Promise<ApiTrack | null> {
     try {
         const response = await fetch(`${API_BASE_URL}/getShazamSong`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', "ngrok-skip-browser-warning": "1" },
             body: JSON.stringify({ audio_base64: audio })
         });
         if (!response.ok) {
@@ -112,7 +118,7 @@ export async function addSong(song: NewSong): Promise<boolean> {
     try {
         const response = await fetch(`${API_BASE_URL}/addSong`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', "ngrok-skip-browser-warning": "1" },
             body: JSON.stringify(song)
         });
 
