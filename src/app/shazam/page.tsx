@@ -10,18 +10,44 @@ import { Track, getShazamSong, mapApiTrackToTrack } from "@/lib/songs";
 import { AudioLines, Loader2, Mic, Music, Upload, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, useRef, useState, useEffect } from "react";
 
 export default function ShazamPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [identifiedTrack, setIdentifiedTrack] = useState<Track | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [hasCameraPermission, setHasCameraPermission] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
 
   const { toast } = useToast();
+
+   useEffect(() => {
+    const getCameraPermission = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({audio: true, video: false});
+        setHasCameraPermission(true);
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (error) {
+        console.error('Error accessing microphone:', error);
+        setHasCameraPermission(false);
+        toast({
+          variant: 'destructive',
+          title: 'Microphone Access Denied',
+          description: 'Please enable microphone permissions in your browser settings to use this feature.',
+        });
+      }
+    };
+
+    getCameraPermission();
+  }, []);
 
   const handleAudioData = async (audioBlob: Blob) => {
     setIsProcessing(true);
@@ -119,6 +145,15 @@ export default function ShazamPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+       { !(hasCameraPermission) && (
+        <Alert variant="destructive" className="mb-4">
+              <AlertTitle>Microphone Access Required</AlertTitle>
+              <AlertDescription>
+                Please allow microphone access to use this feature. You may need to grant permission in your browser settings.
+              </AlertDescription>
+        </Alert>
+      )
+      }
       <div className="flex flex-col items-center justify-center gap-8">
         {!identifiedTrack && !isProcessing && !error && (
             <Card className="w-full max-w-md bg-secondary/30">
@@ -131,7 +166,7 @@ export default function ShazamPage() {
                     size="lg"
                     className={`w-48 h-48 rounded-full bg-primary/20 hover:bg-primary/30 border-8 border-primary/50 text-primary shadow-lg ${isRecording ? 'animate-pulse' : ''}`}
                     onClick={isRecording ? stopRecording : startRecording}
-                    disabled={isProcessing}
+                    disabled={isProcessing || !hasCameraPermission}
                 >
                     {isRecording ? <AudioLines className="w-24 h-24" /> : <Mic className="w-24 h-24" />}
                 </Button>
