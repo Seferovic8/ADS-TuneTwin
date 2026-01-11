@@ -22,6 +22,10 @@ async function SimilarityContent({ trackId }: { trackId: number }) {
 
   const similarTracksData = await findSimilarTracks(trackId);
   console.log("Similar Tracks Data:", similarTracksData);
+
+  const bestMatch = similarTracksData.length > 0 ? similarTracksData.reduce((prev, current) => (prev.match > current.match) ? prev : current) : null;
+
+
   return (
     <div className="container mx-auto px-4 py-8">
       <Breadcrumb className="mb-8">
@@ -69,20 +73,22 @@ async function SimilarityContent({ trackId }: { trackId: number }) {
               </div>
             </CardContent>
           </Card>
+          {bestMatch && (
           <Card className="w-full max-w-sm mt-6 bg-secondary/30 rounded-xl border-border/50">
             <CardContent className="p-6">
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-sm text-muted-foreground">MATCH SCORE</p>
-                  <p className="text-5xl font-bold text-blue-400">{track.match}%</p>
+                  <p className="text-5xl font-bold text-blue-400">{bestMatch.match}%</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-muted-foreground">Best Match</p>
-                  <p className="text-lg font-semibold text-blue-300">Best Match</p>
+                  <p className="text-lg font-semibold text-blue-300">{bestMatch.title}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
+          )}
         </div>
 
         <div className="lg:col-span-2">
