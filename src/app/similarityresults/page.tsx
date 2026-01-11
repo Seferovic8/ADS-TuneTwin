@@ -77,8 +77,8 @@ async function SimilarityContent({ trackId }: { trackId: number }) {
                   <p className="text-5xl font-bold text-blue-400">{track.match}%</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Similar to</p>
-                  <p className="text-lg font-semibold text-blue-300">Electronic 2010s</p>
+                  <p className="text-sm text-muted-foreground">Best Match</p>
+                  <p className="text-lg font-semibold text-blue-300">Best Match</p>
                 </div>
               </div>
             </CardContent>
