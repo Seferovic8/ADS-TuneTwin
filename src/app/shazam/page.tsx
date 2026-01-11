@@ -10,15 +10,17 @@ import { AudioLines, Loader2, Mic, Music, Upload, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-
+import { set } from "zod";
 export default function ShazamPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [identifiedTrack, setIdentifiedTrack] = useState<Track | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-
-
+  
+  
+  
+  const stopTimeoutRef = useRef<number | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
@@ -26,14 +28,14 @@ export default function ShazamPage() {
 
   useEffect(() => {
     const checkMicPermission = async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            // We have permission. We can stop the track immediately.
-            stream.getTracks().forEach(track => track.stop());
-            setHasPermission(true);
-        } catch (err) {
-            setHasPermission(false);
-        }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // We have permission. We can stop the track immediately.
+        stream.getTracks().forEach(track => track.stop());
+        setHasPermission(true);
+      } catch (err) {
+        setHasPermission(false);
+      }
     };
     checkMicPermission();
   }, []);
@@ -49,7 +51,7 @@ export default function ShazamPage() {
       reader.onloadend = async () => {
         const base64Audio = (reader.result as string).split(",")[1];
         const result = await getShazamSong(base64Audio);
-
+        setIsProcessing(false);
         if (result) {
           setIdentifiedTrack(mapApiTrackToTrack(result));
         } else {
@@ -62,10 +64,10 @@ export default function ShazamPage() {
         }
       };
       reader.onerror = () => {
-         toast({
-            variant: "destructive",
-            title: "File Error",
-            description: "There was an error reading the audio file.",
+        toast({
+          variant: "destructive",
+          title: "File Error",
+          description: "There was an error reading the audio file.",
         });
       }
     } catch (err) {
@@ -77,7 +79,7 @@ export default function ShazamPage() {
         description: "Something went wrong while trying to identify the song.",
       });
     } finally {
-      setIsProcessing(false);
+      // setIsProcessing(false);
     }
   };
 
@@ -102,10 +104,10 @@ export default function ShazamPage() {
       mediaRecorderRef.current.start();
 
       // Stop recording after 10 seconds
-      setTimeout(stopRecording, 10000);
+      setTimeout(stopRecording, 30000);
       toast({
         title: "Listening...",
-        description: "Recording for 10 seconds.",
+        description: "Recording for 30 seconds.",
       })
 
     } catch (err) {
@@ -121,11 +123,21 @@ export default function ShazamPage() {
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
-  };
+  // clear pending autostop
+  if (stopTimeoutRef.current !== null) {
+    window.clearTimeout(stopTimeoutRef.current);
+    stopTimeoutRef.current = null;
+  }
+
+  const mr = mediaRecorderRef.current;
+
+  // stop only if actually recording (ignore React state)
+  if (mr && mr.state !== "inactive") {
+    mr.stop();
+  }
+
+  setIsRecording(false);
+};
 
   const handleFileUpload = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -144,9 +156,9 @@ export default function ShazamPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col items-center justify-center gap-8">
-        
+
         {isProcessing && (
-           <Card className="w-full max-w-md bg-secondary/30">
+          <Card className="w-full max-w-md bg-secondary/30">
             <CardContent className="p-8 text-center min-h-[380px] flex flex-col items-center justify-center">
               <Loader2 className="w-24 h-24 text-primary animate-spin mb-6" />
               <h1 className="text-2xl font-bold">Identifying...</h1>
@@ -157,79 +169,79 @@ export default function ShazamPage() {
 
         {error && !isProcessing && (
           <Card className="w-full max-w-md bg-secondary/30">
-             <CardContent className="p-8 text-center min-h-[380px] flex flex-col items-center justify-center">
-                <Alert variant="destructive" className="text-left mb-6">
-                  <AlertTitle>Recognition Failed</AlertTitle>
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-                <Button onClick={resetState}>
-                  Try Again
-                </Button>
-              </CardContent>
+            <CardContent className="p-8 text-center min-h-[380px] flex flex-col items-center justify-center">
+              <Alert variant="destructive" className="text-left mb-6">
+                <AlertTitle>Recognition Failed</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+              <Button onClick={resetState}>
+                Try Again
+              </Button>
+            </CardContent>
           </Card>
         )}
 
         {identifiedTrack && !isProcessing && (
           <Card className="w-full max-w-md bg-secondary/30">
             <CardContent className="p-8 text-center min-h-[380px] flex flex-col items-center justify-center">
-                <>
-                  <h3 className="text-lg font-semibold text-primary mb-4">We found a match!</h3>
-                  <div className="flex items-center w-full p-3 rounded-lg bg-secondary/30">
-                    <Image
-                      src={identifiedTrack.imageUrl || ''}
-                      alt={`Album art for ${identifiedTrack.title}`}
-                      width={64}
-                      height={64}
-                      className="rounded-md mr-4 aspect-square object-cover"
-                      data-ai-hint={identifiedTrack.imageHint}
-                    />
-                    <div className="flex-1 text-left">
-                      <p className="font-bold text-lg">{identifiedTrack.title}</p>
-                      <p className="text-md text-muted-foreground">{identifiedTrack.artist}</p>
-                    </div>
+              <>
+                <h3 className="text-lg font-semibold text-primary mb-4">We found a match!</h3>
+                <div className="flex items-center w-full p-3 rounded-lg bg-secondary/30">
+                  <Image
+                    src={identifiedTrack.imageUrl || ''}
+                    alt={`Album art for ${identifiedTrack.title}`}
+                    width={64}
+                    height={64}
+                    className="rounded-md mr-4 aspect-square object-cover"
+                    data-ai-hint={identifiedTrack.imageHint}
+                  />
+                  <div className="flex-1 text-left">
+                    <p className="font-bold text-lg">{identifiedTrack.title}</p>
+                    <p className="text-md text-muted-foreground">{identifiedTrack.artist}</p>
                   </div>
-                  <div className="flex gap-2 mt-6 w-full">
-                    <Button onClick={resetState} variant="outline" className="flex-1">
-                      <X className="mr-2" />
-                      Reset
-                    </Button>
-                    <Button asChild className="flex-1">
-                      <Link href={`/similarityresults?trackId=${identifiedTrack.id}`}>
-                        <Music className="mr-2" />
-                        Find Similar
-                      </Link>
-                    </Button>
-                  </div>
-                </>
-              </CardContent>
+                </div>
+                <div className="flex gap-2 mt-6 w-full">
+                  <Button onClick={resetState} variant="outline" className="flex-1">
+                    <X className="mr-2" />
+                    Reset
+                  </Button>
+                  <Button asChild className="flex-1">
+                    <Link href={`/similarityresults?trackId=${identifiedTrack.id}`}>
+                      <Music className="mr-2" />
+                      Find Similar
+                    </Link>
+                  </Button>
+                </div>
+              </>
+            </CardContent>
           </Card>
         )}
 
         {!isProcessing && !identifiedTrack && !error && (
-            <Card className="w-full max-w-md bg-secondary/30">
-                <CardContent className="p-12 text-center">
-                <h1 className="text-3xl font-bold mb-4">Tap to Shazam</h1>
-                <p className="text-muted-foreground mb-8">
-                    Let's identify that song for you.
-                </p>
-                <Button
-                    size="lg"
-                    className={`w-48 h-48 rounded-full bg-primary/20 hover:bg-primary/30 border-8 border-primary/50 text-primary shadow-lg ${isRecording ? 'animate-pulse' : ''}`}
-                    onClick={isRecording ? stopRecording : startRecording}
-                    disabled={isProcessing || hasPermission === false}
-                >
-                    {isRecording ? <AudioLines className="w-24 h-24" /> : <Mic className="w-24 h-24" />}
-                </Button>
-                 {hasPermission === false && (
-                    <Alert variant="destructive" className="mt-8 text-left">
-                        <AlertTitle>Microphone Access Denied</AlertTitle>
-                        <AlertDescription>
-                            Please enable microphone permissions in your browser settings to use this feature.
-                        </AlertDescription>
-                    </Alert>
-                )}
-                </CardContent>
-            </Card>
+          <Card className="w-full max-w-md bg-secondary/30">
+            <CardContent className="p-12 text-center">
+              <h1 className="text-3xl font-bold mb-4">Tap to Shazam</h1>
+              <p className="text-muted-foreground mb-8">
+                Let's identify that song for you.
+              </p>
+              <Button
+                size="lg"
+                className={`w-48 h-48 rounded-full bg-primary/20 hover:bg-primary/30 border-8 border-primary/50 text-primary shadow-lg ${isRecording ? 'animate-pulse' : ''}`}
+                onClick={isRecording ? stopRecording : startRecording}
+                disabled={isProcessing || hasPermission === false}
+              >
+                {isRecording ? <AudioLines className="w-24 h-24" /> : <Mic className="w-24 h-24" />}
+              </Button>
+              {hasPermission === false && (
+                <Alert variant="destructive" className="mt-8 text-left">
+                  <AlertTitle>Microphone Access Denied</AlertTitle>
+                  <AlertDescription>
+                    Please enable microphone permissions in your browser settings to use this feature.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
         )}
 
 
