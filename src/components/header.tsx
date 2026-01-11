@@ -1,7 +1,8 @@
+
 "use client";
 
 import Link from "next/link";
-import { Circle, Search, Music, Upload } from "lucide-react";
+import { Circle, Search, Music, Upload, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,9 +16,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useState } from "react";
 
 export function Header() {
   const pathname = usePathname();
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const navLinkClasses = (path: string) =>
     cn(
@@ -25,18 +29,51 @@ export function Header() {
       pathname.startsWith(path) ? "text-foreground" : "text-foreground/60"
     );
 
+  const mobileNavLinkClasses = (path: string) =>
+    cn(
+        "py-2 text-lg",
+        pathname.startsWith(path) ? "text-primary font-semibold" : "text-foreground/80"
+    );
+
+  const closeSheet = () => setIsSheetOpen(false);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center">
-        <div className="mr-4 hidden md:flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
+        <div className="mr-4 flex items-center">
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden mr-2">
+                  <Menu />
+                  <span className="sr-only">Toggle Menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+                <nav className="flex flex-col gap-4 mt-8">
+                  <Link href="/" className={mobileNavLinkClasses("/")} onClick={closeSheet}>
+                    Home
+                  </Link>
+                  <Link href="/similarity" className={mobileNavLinkClasses("/similarity")} onClick={closeSheet}>
+                    Similarity
+                  </Link>
+                  <Link href="/shazam" className={mobileNavLinkClasses("/shazam")} onClick={closeSheet}>
+                    Shazam
+                  </Link>
+                  <Link href="/addSong" className={mobileNavLinkClasses("/addSong")} onClick={closeSheet}>
+                    Add Song
+                  </Link>
+                </nav>
+              </SheetContent>
+            </Sheet>
+          <Link href="/" className="flex items-center space-x-2">
             <Circle className="h-6 w-6 text-primary" />
             <span className="hidden font-bold sm:inline-block">
               TrackFinder
             </span>
           </Link>
-          <nav className="flex items-center gap-6 text-sm">
+        </div>
+        
+        <nav className="hidden md:flex items-center gap-6 text-sm ml-6">
             <Link
               href="/"
               className={cn("transition-colors hover:text-foreground/80", pathname === "/" ? "text-foreground" : "text-foreground/60")}
@@ -62,8 +99,8 @@ export function Header() {
               Add Song
             </Link>
           </nav>
-        </div>
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+
+        <div className="flex flex-1 items-center justify-end space-x-2">
           <div className="w-full flex-1 md:w-auto md:flex-none">
             <form>
               <div className="relative">
