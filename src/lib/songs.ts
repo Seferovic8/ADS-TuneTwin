@@ -122,6 +122,31 @@ export async function findSimilarTracks(song_id: number): Promise<Track[]> {
     }
 }
 
+export async function getRecommendations(song_ids: number[]): Promise<Track[]> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/recommend`, {
+            method: 'POST',
+            headers: {
+                "ngrok-skip-browser-warning": "1",
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ song_ids }),
+        });
+
+        if (!response.ok) {
+            console.error("Failed to fetch recommendations:", response.statusText);
+            return [];
+        }
+
+        const apiTracks: ApiTrack[] = await response.json();
+        return apiTracks.map(mapApiTrackToTrack);
+
+    } catch (error) {
+        console.error("Error fetching recommendations:", error);
+        return [];
+    }
+}
+
 export async function getShazamSong(audio: string): Promise<ApiTrack | null> {
     try {
         const response = await fetch(`${API_BASE_URL}/getShazamSong`, {
