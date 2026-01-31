@@ -59,6 +59,9 @@ export function Header() {
                   <Link href="/shazam" className={mobileNavLinkClasses("/shazam")} onClick={closeSheet}>
                     Shazam
                   </Link>
+                  <Link href="/radar" className={mobileNavLinkClasses("/radar")} onClick={closeSheet}>
+                    Radar
+                  </Link>
                   <Link href="/addSong" className={mobileNavLinkClasses("/addSong")} onClick={closeSheet}>
                     Add Song
                   </Link>
@@ -91,6 +94,12 @@ export function Header() {
               className={navLinkClasses("/shazam")}
             >
               Shazam
+            </Link>
+            <Link
+              href="/radar"
+              className={navLinkClasses("/radar")}
+            >
+              Radar
             </Link>
              <Link
               href="/addSong"

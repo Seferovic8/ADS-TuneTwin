@@ -1,3 +1,4 @@
+
 import { API_BASE_URL } from "./config";
 
 export type ApiTrack = {
@@ -30,6 +31,31 @@ export type NewSong = {
     album: string;
     image?: string;
     track: string; // Base64 encoded audio
+}
+
+export type RadarPoint = {
+    song_id: number;
+    x: number;
+    y: number;
+};
+
+export async function getRadarData(): Promise<RadarPoint[]> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/getRadar`, {
+            headers: {
+                "ngrok-skip-browser-warning": "1",
+            }
+        });
+        if (!response.ok) {
+            console.error("Failed to fetch radar data:", response.statusText);
+            return [];
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Error fetching radar data:", error);
+        return [];
+    }
 }
 
 export function mapApiTrackToTrack(apiTrack: ApiTrack): Track {
