@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -7,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getAllTracks, getRadarData, Track } from "@/lib/songs";
 import { Loader2 } from "lucide-react";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import Image from "next/image";
 
 type RadarPoint = {
     song_id: number;
@@ -20,15 +20,27 @@ type RadarTrack = {
   y: number;
   title: string;
   artist: string;
+  imageUrl?: string;
 }
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="p-2 text-sm bg-background border rounded-md shadow-md">
-        <p className="font-bold">{data.title}</p>
-        <p className="text-muted-foreground">{data.artist}</p>
+      <div className="p-2 text-sm bg-background border rounded-md shadow-md flex items-center gap-2">
+        {data.imageUrl && (
+            <Image
+                src={data.imageUrl}
+                alt={data.title}
+                width={40}
+                height={40}
+                className="rounded-md"
+            />
+        )}
+        <div>
+            <p className="font-bold">{data.title}</p>
+            <p className="text-muted-foreground">{data.artist}</p>
+        </div>
       </div>
     );
   }
@@ -58,7 +70,7 @@ export default function RadarPage() {
 
         const tracksMap = new Map<number, Track>(allTracks.map(track => [track.id, track]));
 
-        const combinedData = radarData.map(point => {
+        const combinedData: RadarTrack[] = radarData.map(point => {
           const trackInfo = tracksMap.get(point.song_id);
           return {
             id: point.song_id,
@@ -66,6 +78,7 @@ export default function RadarPage() {
             y: point.y,
             title: trackInfo?.title || "Unknown Title",
             artist: trackInfo?.artist || "Unknown Artist",
+            imageUrl: trackInfo?.imageUrl,
           }
         });
 
