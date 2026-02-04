@@ -1,0 +1,18 @@
+""" This file contains the global settings for the project. """
+
+
+SAMPLE_RATE = 44100#22050
+
+PEAK_BOX_SIZE = 10
+
+HOP_LENGTH = 512
+FFT_WINDOW_SIZE = 2048
+AMPLITUDE_THRESHOLD = -40
+FEN_VALUE = 30
+T_MIN = 1
+T_MAX = 200
+# Similarity
+N_MFCC=15
+SEGMENT_DURATION = 6
+HOP_DURATION = 4
+
