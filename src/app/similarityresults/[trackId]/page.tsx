@@ -1,4 +1,3 @@
-
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +7,15 @@ import SimilarTracks from "@/components/similar-tracks";
 import { getAllTracks, Track, findSimilarTracks } from "@/lib/songs";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+
+// 1. REQUIRED FOR STATIC EXPORT
+// This tells Next.js to pre-build a page for every track ID found in your data.
+export async function generateStaticParams() {
+  const tracks = await getAllTracks();
+  return tracks.map((track) => ({
+    trackId: track.id.toString(), // Must match the folder name [trackId]
+  }));
+}
 
 async function getTrackById(id: number): Promise<Track | undefined> {
   const tracks = await getAllTracks();
@@ -21,10 +29,7 @@ async function SimilarityContent({ trackId }: { trackId: number }) {
   }
 
   const similarTracksData = await findSimilarTracks(trackId);
-  console.log("Similar Tracks Data:", similarTracksData);
-
   const bestMatch = similarTracksData.length > 0 ? similarTracksData.reduce((prev, current) => (prev.match > current.match) ? prev : current) : null;
-
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -55,6 +60,8 @@ async function SimilarityContent({ trackId }: { trackId: number }) {
                 height={400}
                 className="rounded-lg mb-6 aspect-square object-cover"
                 data-ai-hint={track.imageHint || 'album art'}
+                // 2. REQUIRED FOR STATIC EXPORT (unless you have a custom loader)
+                unoptimized
               />
               <h2 className="text-3xl font-bold">{track.title}</h2>
               <p className="text-primary text-lg mb-1">{track.artist}</p>
@@ -74,20 +81,20 @@ async function SimilarityContent({ trackId }: { trackId: number }) {
             </CardContent>
           </Card>
           {bestMatch && (
-          <Card className="w-full max-w-sm mt-6 bg-secondary/30 rounded-xl border-border/50">
-            <CardContent className="p-6">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm text-muted-foreground">MATCH SCORE</p>
-                  <p className="text-5xl font-bold text-blue-400">{bestMatch.match}%</p>
+            <Card className="w-full max-w-sm mt-6 bg-secondary/30 rounded-xl border-border/50">
+              <CardContent className="p-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-sm text-muted-foreground">MATCH SCORE</p>
+                    <p className="text-5xl font-bold text-blue-400">{bestMatch.match}%</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">Best Match</p>
+                    <p className="text-lg font-semibold text-blue-300">{bestMatch.title}</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Best Match</p>
-                  <p className="text-lg font-semibold text-blue-300">{bestMatch.title}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
           )}
         </div>
 
@@ -99,16 +106,14 @@ async function SimilarityContent({ trackId }: { trackId: number }) {
   );
 }
 
-
+// 3. UPDATED COMPONENT SIGNATURE
 export default async function SimilarityResultsPage({
-  searchParams
+  params
 }: {
-  searchParams: Promise<{ trackId: number }> // 2. Update type to Promise
+  params: Promise<{ trackId: string }> // Using params (path), NOT searchParams
 }) {
-
-  // 3. Await the params before accessing properties
-  const params = await searchParams;
-  const trackId = params.trackId;
+  const resolvedParams = await params;
+  const trackId = parseInt(resolvedParams.trackId, 10);
 
   return (
     <Suspense fallback={<div>Loading...</div>}>

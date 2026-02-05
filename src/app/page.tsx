@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 
 function TrackItem({ track }: { track: Track }) {
     return (
-        <Link href={`/similarityresults?trackId=${track.id}`} className="block">
+        <Link href={`/similarityresults/${track.id}`} className="block">
             <div className="flex items-center p-3 rounded-lg hover:bg-secondary/20 transition-colors cursor-pointer">
                 {track.imageUrl ? (
                     <Image
